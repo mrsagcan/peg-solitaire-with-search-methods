@@ -14,6 +14,10 @@ using namespace std;
 //TODO: count nodes
 
 
+void tree_search(char , Node* );
+Node* initialize_game();
+void fill_children(Node*);
+
 int main()
 {
     cout << "Please choose a search method:\n\n";
@@ -33,6 +37,8 @@ int main()
     Node* initial = initialize_game();
     tree_search(method_choice, initial);
 
+
+    cout << "ended " << endl;
     return 0;
 }
 
@@ -52,19 +58,22 @@ void tree_search(char method_choice, Node* initial)
         switch (method_choice)
         {
             case 'a':
+            {
                 //bfs
-                Node * front = frontier_queue.front();
+                Node* front = frontier_queue.front();
                 frontier_queue.pop();
                 fill_children(front);
 
-                for(Node * child : front->children)
+                for (Node* child : front->children)
                 {
                     frontier_queue.push(child);
                 }
                 break;
+            }
             case 'b':
+            {
                 //dfs
-                Node * front = frontier_stack.top();
+                Node* front = frontier_stack.top();
                 frontier_stack.pop();
                 fill_children(front);
 
@@ -73,14 +82,16 @@ void tree_search(char method_choice, Node* initial)
                     frontier_stack.push(child);
                 }
                 break;
+            }
             case 'c':
+            {
                 //ids
                 
                 break;
+            }
             case 'd':
             {
                 //dfs w/random
-                //TODO: randomize this
                 Node* front = frontier_stack.top();
                 frontier_stack.pop();
                 fill_children(front);
@@ -96,8 +107,10 @@ void tree_search(char method_choice, Node* initial)
                 break;
             }
             case 'e':
+            {
                 //dfs with node selection heuristic
                 break;
+            }
         }
     }
     
