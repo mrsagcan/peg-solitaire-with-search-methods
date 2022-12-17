@@ -2,9 +2,17 @@
 #include <vector>
 #include <queue>
 #include <stack>
+#include <algorithm>
+#include <chrono>
+#include <random>
+
 #include "node.cpp"
 
 using namespace std;
+
+//TODO: add time limit 
+//TODO: count nodes
+
 
 int main()
 {
@@ -48,6 +56,7 @@ void tree_search(char method_choice, Node* initial)
                 Node * front = frontier_queue.front();
                 frontier_queue.pop();
                 fill_children(front);
+
                 for(Node * child : front->children)
                 {
                     frontier_queue.push(child);
@@ -58,6 +67,7 @@ void tree_search(char method_choice, Node* initial)
                 Node * front = frontier_stack.top();
                 frontier_stack.pop();
                 fill_children(front);
+
                 for (Node* child : front->children)
                 {
                     frontier_stack.push(child);
@@ -65,10 +75,26 @@ void tree_search(char method_choice, Node* initial)
                 break;
             case 'c':
                 //ids
+                
                 break;
             case 'd':
-                //dfs w\random
+            {
+                //dfs w/random
+                //TODO: randomize this
+                Node* front = frontier_stack.top();
+                frontier_stack.pop();
+                fill_children(front);
+
+                vector<Node*> shuffled_children = front->children;
+                unsigned seed = chrono::system_clock::now().time_since_epoch().count();
+                shuffle(shuffled_children.begin(), shuffled_children.end(), default_random_engine(seed));
+
+                for (Node* child : shuffled_children)
+                {
+                    frontier_stack.push(child);
+                }
                 break;
+            }
             case 'e':
                 //dfs with node selection heuristic
                 break;
