@@ -1,17 +1,7 @@
 #include "node.h"
 #include <vector>
-using namespace std;
 
-class Node
+Node::Node(Node *parent)
 {
-	public:
-		vector<vector<int>> state;
-		Node *parent;
-		Node *child;
-		Node(Node *aparent, Node *achild)
-		{
-			parent = aparent;
-			child = achild;
-		}
-
-};
+	Node::parent = parent;
+}

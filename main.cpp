@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <queue>
+#include <stack>
 #include "node.cpp"
 
 using namespace std;
@@ -27,38 +29,57 @@ int main()
 }
 
 
+
 void tree_search(char method_choice, Node* initial)
 {
-    vector<Node> frontier;
+    stack<Node*> frontier_stack;
+    queue<Node*> frontier_queue;
+
+    frontier_stack.push(initial);
+    frontier_queue.push(initial);
     while (true)
     {
-        if (frontier.empty())
-            return;
-    }
-    switch (method_choice)
-    {
-        case 'a':
-            //bfs
+        if (frontier_queue.empty())
             break;
-        case 'b':
-            //dfs
-            break;
-        case 'c':
-            //ids
-            break;
-        case 'd':
-            //dfs w\random
-            break;
-        case 'e':
-            //dfs with node selection heuristic
-            break;
+        switch (method_choice)
+        {
+            case 'a':
+                //bfs
+                Node * front = frontier_queue.front();
+                frontier_queue.pop();
+                fill_children(front);
+                for(Node * child : front->children)
+                {
+                    frontier_queue.push(child);
+                }
+                break;
+            case 'b':
+                //dfs
+                Node * front = frontier_stack.top();
+                frontier_stack.pop();
+                fill_children(front);
+                for (Node* child : front->children)
+                {
+                    frontier_stack.push(child);
+                }
+                break;
+            case 'c':
+                //ids
+                break;
+            case 'd':
+                //dfs w\random
+                break;
+            case 'e':
+                //dfs with node selection heuristic
+                break;
+        }
     }
     
 }
 
 Node* initialize_game()
 {
-    Node* node = new Node(NULL, NULL);
+    Node* node = new Node(NULL);
     node->state = 
     { 
         {-1,2}, {-1,2}, {1,1},  {2,1},  {3,1},  {-1,2}, {-1,2},
@@ -71,3 +92,80 @@ Node* initialize_game()
     };
     return node;
 }
+
+//TODO: think about moving it to Node class
+void fill_children(Node* front)
+{
+    for (int i = 0; i < front->state.size(); i++)
+    {
+        vector<int> peg = front->state.at(i);
+
+        if (peg.at(1) == 2) continue;
+
+        if (peg.at(1) == 0)
+        {
+            //the order to push moves to children: up,left,right,down
+
+            //up
+            if (i > 13)
+            {
+                vector<int> up = front->state.at(i - 14);
+                if (up.at(1) == 1)
+                {
+                    vector<vector<int>> new_state = front->state;
+                    new_state.at(i - 14).at(1) = 0;
+                    new_state.at(i - 7).at(1) = 0;
+                    new_state.at(i).at(1) = 1;
+                    Node* child = new Node(front);
+                    child->state = new_state;
+                    front->children.push_back(child);
+                }
+            }
+            //left
+            if (i % 7 < 5)
+            {
+                vector<int> left = front->state.at(i - 2);
+                if (left.at(1) == 1)
+                {
+                    vector<vector<int>> new_state = front->state;
+                    new_state.at(i - 2).at(1) = 0;
+                    new_state.at(i - 1).at(1) = 0;
+                    new_state.at(i).at(1) = 1;
+                    Node* child = new Node(front);
+                    child->state = new_state;
+                    front->children.push_back(child);
+                }
+            }
+            //right
+            if (i % 7 > 1)
+            {
+                vector<int> right = front->state.at(i + 2);
+                if (right.at(1) == 1)
+                {
+                    vector<vector<int>> new_state = front->state;
+                    new_state.at(i + 2).at(1) = 0;
+                    new_state.at(i + 1).at(1) = 0;
+                    new_state.at(i).at(1) = 1;
+                    Node* child = new Node(front);
+                    child->state = new_state;
+                    front->children.push_back(child);
+                }
+            }
+            //down
+            if (i < 35)
+            {
+                vector<int> down = front->state.at(i + 14);
+                if (down.at(1) == 1)
+                {
+                    vector<vector<int>> new_state = front->state;
+                    new_state.at(i + 14).at(1) = 0;
+                    new_state.at(i + 7).at(1) = 0;
+                    new_state.at(i).at(1) = 1;
+                    Node* child = new Node(front);
+                    child->state = new_state;
+                    front->children.push_back(child);
+                }
+            }
+        }
+    }
+};
