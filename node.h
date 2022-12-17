@@ -1,15 +1,19 @@
 #pragma once
 
 #include <vector>
-using namespace std;
+#include <string>
 
 class Node
 {
 public:
-	vector<vector<int>> state;
+	std::vector<std::vector<int>> state;
 	Node* parent;
-	vector<Node*> children;
+	std::vector<Node*> children;
+	int depth;
+	int remainingPegs;
 
 	Node(Node* parent);
+	int CountRemainingPegs();
+	std::string ToString();
 };
 
