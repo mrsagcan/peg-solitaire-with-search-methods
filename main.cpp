@@ -1,6 +1,4 @@
 #include <iostream>
-#include <queue>
-#include <stack>
 #include <algorithm>
 #include <chrono>
 #include <random>
@@ -9,16 +7,17 @@
 
 using namespace std;
 
-//TODO: count nodes
 //TODO: garbage collection
 
 void tree_search(char , Node* , chrono::steady_clock::time_point);
 Node* initialize_game();
 void fill_children(Node*);
 bool check_optimal_solution(Node*, int);
+bool compare(Node*, Node*);
 
 Node* sub_optimal_solution;
 int explored_node_count = 0;
+int time_limit = 60;
 
 int main()
 {
@@ -30,19 +29,23 @@ int main()
     cout << "e. Depth-First Search with a Node Selection Heuristic\n";
 
     char method_choice{};
+    cin >> method_choice;
     
     while (method_choice != 'a' && method_choice != 'b' && method_choice != 'c' && method_choice != 'd' && method_choice != 'e')
     {
         cout << "Please enter a valid input (a,b,c,d,e)\n";
         cin >> method_choice;
     }
+
+    cout << "Enter the time limit in (minutes): ";
+    cin >> time_limit;
     Node* initial = initialize_game();
 
     auto start_time = chrono::high_resolution_clock::now();
 
     tree_search(method_choice, initial, start_time);
 
-    if (sub_optimal_solution->remainingPegs == 1)
+    if (sub_optimal_solution->remaining_pegs == 1)
     {
         //means optimal
     }
@@ -54,11 +57,8 @@ int main()
 
 void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_point start_time)
 {
-    stack<Node*> frontier_stack;
-    queue<Node*> frontier_queue;
-
-    frontier_stack.push(initial);
-    frontier_queue.push(initial);
+    vector<Node*> frontier;
+    frontier.push_back(initial);
 
     int min_remaining_pegs = 32;
     switch (method_choice)
@@ -68,12 +68,12 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
         {
             while (true)
             {
-                Node* front = frontier_queue.front();
-                frontier_queue.pop();
+                Node* front = frontier.front();
+                frontier.erase(frontier.begin());
 
 
                 explored_node_count++;
-                cout << front->ToString() + "\nNo of Explored Nodes: ";
+                cout << front->to_string() + "\nNo of Explored Nodes: ";
                 cout << explored_node_count << endl;
 
                 if(check_optimal_solution(front, min_remaining_pegs)) 
@@ -81,8 +81,9 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
                 auto stop_time = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
-                if (duration.count() >= 1)
+                if (duration.count() >= time_limit)
                 {
+                    cout << "Time limit reached!" << endl;
                     break;
                 }
 
@@ -90,7 +91,7 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
                 for (Node* child : front->children)
                 {
-                    frontier_queue.push(child);
+                    frontier.push_back(child);
                 }
             }
             break;
@@ -100,30 +101,31 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
         {
             while (true)
             {
-                Node* top = frontier_stack.top();
-                frontier_stack.pop();
+
+                Node* top = frontier.front();
+                frontier.erase(frontier.begin());
 
                 explored_node_count++;
-                cout << top->ToString() + "\nNo of Explored Nodes: ";
+                cout << top->to_string() + "\nNo of Explored Nodes: ";
                 cout << explored_node_count << endl;
-
-                cout << top->ToString() << endl;
 
                 if(check_optimal_solution(top, min_remaining_pegs))
                     break;
 
                 auto stop_time = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
-                if (duration.count() >= 1)
+                if (duration.count() >= time_limit)
                 {
+                    cout << "Time limit reached!" << endl;
+
                     break;
                 }
 
                 fill_children(top);
 
-                for (Node* child : top->children)
+                for (int i = top->children.size() - 1; i >= 0 ; i--)
                 {
-                    frontier_stack.push(child);
+                    frontier.emplace(frontier.begin(), top->children.at(i));
                 }
             }
             break;
@@ -137,13 +139,12 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
             {
                 while (true)
                 {
-                    Node* top = frontier_stack.top();
-                    frontier_stack.pop();
 
-                    cout << top->ToString() << endl;
+                    Node* top = frontier.front();
+                    frontier.erase(frontier.begin());
 
                     explored_node_count++;
-                    cout << top->ToString() + "\nNo of Explored Nodes: ";
+                    cout << top->to_string() + "\nNo of Explored Nodes: ";
                     cout << explored_node_count << endl;
 
                     if (check_optimal_solution(top, min_remaining_pegs))
@@ -155,16 +156,17 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                     {
                         fill_children(top);
 
-                        for (Node* child : top->children)
+                        for (int i = top->children.size() - 1; i >= 0; i--)
                         {
-                            frontier_stack.push(child);
+                            frontier.emplace(frontier.begin(), top->children.at(i));
                         }
                     }
-                    if (frontier_stack.empty())
+                    if (frontier.empty())
                         break;
                     
                 }
                 depth_limit++;
+                frontier.push_back(initial);
 
                 if (cutoff)
                 {
@@ -172,8 +174,10 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 }
                 auto stop_time = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
-                if (duration.count() >= 1)
+                if (duration.count() >= time_limit)
                 {
+                    cout << "Time limit reached!" << endl;
+
                     break;
                 }
             }
@@ -184,11 +188,11 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
         {
             while (true)
             {
-                Node* top = frontier_stack.top();
-                frontier_stack.pop();
+                Node* top = frontier.front();
+                frontier.erase(frontier.begin());
 
                 explored_node_count++;
-                cout << top->ToString() + "\nNo of Explored Nodes: ";
+                cout << top->to_string() + "\nNo of Explored Nodes: ";
                 cout << explored_node_count << endl;
 
                 if (check_optimal_solution(top, min_remaining_pegs))
@@ -196,8 +200,10 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
                 auto stop_time = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
-                if (duration.count() >= 1)
+                if (duration.count() >= time_limit)
                 {
+                    cout << "Time limit reached!" << endl;
+
                     break;
                 }
 
@@ -210,7 +216,7 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
                 for (Node* child : shuffled_children)
                 {
-                    frontier_stack.push(child);
+                    frontier.emplace(frontier.begin(), child);
                 }
             }
             break;
@@ -218,6 +224,40 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
         //dfs with node selection heuristic
         case 'e':
         {
+            while (true)
+            {
+                Node* top = frontier.front();
+                frontier.erase(frontier.begin());
+
+                explored_node_count++;
+                cout << top->to_string() + "\nNo of Explored Nodes: ";
+                cout << explored_node_count << endl;
+
+                if (check_optimal_solution(top, min_remaining_pegs))
+                    break;
+
+                auto stop_time = chrono::high_resolution_clock::now();
+                auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
+                if (duration.count() >= time_limit)
+                {
+                    cout << "Time limit reached!" << endl;
+                    break;
+                }
+
+                fill_children(top);
+
+                for (int i = 0; i < top->children.size(); i++)
+                {
+                    top->children.at(i)->set_heuristic_point();
+                }
+                vector<Node*> sorted_children = top->children;
+                sort(sorted_children.begin(), sorted_children.end(), compare);
+
+                for (int i = sorted_children.size() - 1; i >= 0; i--)
+                {
+                    frontier.emplace(frontier.begin(), sorted_children.at(i));
+                }
+            }
             break;
         }
     } 
@@ -263,6 +303,7 @@ void fill_children(Node* front)
                     new_state.at(i).at(1) = 1;
                     Node* child = new Node(front);
                     child->state = new_state;
+                    child->moved_peg_index = i -14;
                     front->children.push_back(child);
                 }
             }
@@ -277,6 +318,7 @@ void fill_children(Node* front)
                     new_state.at(i).at(1) = 1;
                     Node* child = new Node(front);
                     child->state = new_state;
+                    child->moved_peg_index = i - 2;
                     front->children.push_back(child);
                 }
             }
@@ -291,6 +333,7 @@ void fill_children(Node* front)
                     new_state.at(i).at(1) = 1;
                     Node* child = new Node(front);
                     child->state = new_state;
+                    child->moved_peg_index = i + 2;
                     front->children.push_back(child);
                 }
             }
@@ -305,6 +348,7 @@ void fill_children(Node* front)
                     new_state.at(i).at(1) = 1;
                     Node* child = new Node(front);
                     child->state = new_state;
+                    child->moved_peg_index = i + 14;
                     front->children.push_back(child);
                 }
             }
@@ -314,11 +358,16 @@ void fill_children(Node* front)
 
 bool check_optimal_solution(Node* node, int min_remaining_pegs)
 {
-    if (node->remainingPegs < min_remaining_pegs)
+    if (node->remaining_pegs < min_remaining_pegs)
     {
-        min_remaining_pegs = node->remainingPegs;
+        min_remaining_pegs = node->remaining_pegs;
         sub_optimal_solution = node;
     }
-    if (node->remainingPegs == 1) return true;
+    if (node->remaining_pegs == 1) return true;
     return false;
+}
+
+bool compare(Node* a, Node* b)
+{
+    return(a->heuristic_point < b->heuristic_point);
 }

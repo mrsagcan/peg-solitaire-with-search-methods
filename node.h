@@ -10,10 +10,13 @@ public:
 	Node* parent;
 	std::vector<Node*> children;
 	int depth;
-	int remainingPegs;
+	int remaining_pegs;
+	int moved_peg_index;
+	float heuristic_point;
 
 	Node(Node* parent);
-	int CountRemainingPegs();
-	std::string ToString();
+	int count_remaining_pegs();
+	std::string to_string();
+	void set_heuristic_point();
 };
 
