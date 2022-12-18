@@ -15,7 +15,7 @@ public:
 	float heuristic_point;
 
 	Node(Node* parent);
-	int count_remaining_pegs();
+	void count_remaining_pegs();
 	std::string to_string();
 	void set_heuristic_point();
 };

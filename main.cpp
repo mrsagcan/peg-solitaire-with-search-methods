@@ -1,23 +1,9 @@
-#include <iostream>
-#include <algorithm>
-#include <chrono>
-#include <random>
-
-#include "node.h"
+#include "main.h"
 
 using namespace std;
 
 //TODO: garbage collection
 
-void tree_search(char , Node* , chrono::steady_clock::time_point);
-Node* initialize_game();
-void fill_children(Node*);
-bool check_optimal_solution(Node*, int);
-bool compare(Node*, Node*);
-
-Node* sub_optimal_solution;
-int explored_node_count = 0;
-int time_limit = 60;
 
 int main()
 {
@@ -43,13 +29,40 @@ int main()
 
     auto start_time = chrono::high_resolution_clock::now();
 
+    cout << "Timer started: ";
+    if (method_choice == 'a')
+        cout << "Breadth-First Search ";
+    if (method_choice == 'b')
+        cout << "Depth-First Search ";
+    if (method_choice == 'c')
+        cout << "Iterative Deepening Search ";
+    if (method_choice == 'd')
+        cout << "Depth-First Search with Random Selection";
+    if (method_choice == 'e')
+        cout << "Depth-First Search with a Node Selection Heuristic";
+    cout << "\nTime Limit: " << time_limit << " Minutes" << endl;
+
     tree_search(method_choice, initial, start_time);
+
 
     if (sub_optimal_solution->remaining_pegs == 1)
     {
         //means optimal
+        cout << "Optimum solution found." << endl; 
     }
-    cout << "ended " << endl;
+    else
+    {
+        cout << "Sub-optimum Solution Found with " << min_remaining_pegs << "remaining pegs." << endl;
+    }
+    
+    print_solution_steps();
+    auto stop_time = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::seconds>(stop_time - start_time);
+    cout << "The time spent: " << duration.count() << " seconds" << endl;
+    cout << "Number of nodes expanded during the search: " << explored_node_count << endl;
+    cout << "Max number of nodes stored in the memory during the search: " << max_frontier_size << endl;
+    
+
     return 0;
 }
 
@@ -60,7 +73,6 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
     vector<Node*> frontier;
     frontier.push_back(initial);
 
-    int min_remaining_pegs = 32;
     switch (method_choice)
     {
         //bfs
@@ -73,10 +85,8 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
 
                 explored_node_count++;
-                cout << front->to_string() + "\nNo of Explored Nodes: ";
-                cout << explored_node_count << endl;
 
-                if(check_optimal_solution(front, min_remaining_pegs)) 
+                if(check_optimal_solution(front)) 
                     break;
 
                 auto stop_time = chrono::high_resolution_clock::now();
@@ -93,6 +103,10 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 {
                     frontier.push_back(child);
                 }
+                if (frontier.size() > max_frontier_size)
+                {
+                    max_frontier_size = frontier.size();
+                }
             }
             break;
         }
@@ -106,10 +120,8 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 frontier.erase(frontier.begin());
 
                 explored_node_count++;
-                cout << top->to_string() + "\nNo of Explored Nodes: ";
-                cout << explored_node_count << endl;
 
-                if(check_optimal_solution(top, min_remaining_pegs))
+                if(check_optimal_solution(top))
                     break;
 
                 auto stop_time = chrono::high_resolution_clock::now();
@@ -126,6 +138,10 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 for (int i = top->children.size() - 1; i >= 0 ; i--)
                 {
                     frontier.emplace(frontier.begin(), top->children.at(i));
+                }
+                if (frontier.size() > max_frontier_size)
+                {
+                    max_frontier_size = frontier.size();
                 }
             }
             break;
@@ -144,10 +160,8 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                     frontier.erase(frontier.begin());
 
                     explored_node_count++;
-                    cout << top->to_string() + "\nNo of Explored Nodes: ";
-                    cout << explored_node_count << endl;
 
-                    if (check_optimal_solution(top, min_remaining_pegs))
+                    if (check_optimal_solution(top))
                     {
                         cutoff = true;
                         break;
@@ -160,6 +174,10 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                         {
                             frontier.emplace(frontier.begin(), top->children.at(i));
                         }
+                    }
+                    if (frontier.size() > max_frontier_size)
+                    {
+                        max_frontier_size = frontier.size();
                     }
                     if (frontier.empty())
                         break;
@@ -192,10 +210,8 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 frontier.erase(frontier.begin());
 
                 explored_node_count++;
-                cout << top->to_string() + "\nNo of Explored Nodes: ";
-                cout << explored_node_count << endl;
 
-                if (check_optimal_solution(top, min_remaining_pegs))
+                if (check_optimal_solution(top))
                     break;
 
                 auto stop_time = chrono::high_resolution_clock::now();
@@ -218,6 +234,10 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 {
                     frontier.emplace(frontier.begin(), child);
                 }
+                if (frontier.size() > max_frontier_size)
+                {
+                    max_frontier_size = frontier.size();
+                }
             }
             break;
         }
@@ -230,10 +250,8 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 frontier.erase(frontier.begin());
 
                 explored_node_count++;
-                cout << top->to_string() + "\nNo of Explored Nodes: ";
-                cout << explored_node_count << endl;
 
-                if (check_optimal_solution(top, min_remaining_pegs))
+                if (check_optimal_solution(top))
                     break;
 
                 auto stop_time = chrono::high_resolution_clock::now();
@@ -257,11 +275,17 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 {
                     frontier.emplace(frontier.begin(), sorted_children.at(i));
                 }
+                if (frontier.size() > max_frontier_size)
+                {
+                    max_frontier_size = frontier.size();
+                }
             }
             break;
         }
     } 
 }
+
+//TODO: Remove first numbers
 
 Node* initialize_game()
 {
@@ -276,10 +300,10 @@ Node* initialize_game()
         {-1,2}, {-1,2}, {28,1}, {29,1}, {30,1}, {-1,2}, {-1,2},
         {-1,2}, {-1,2}, {31,1}, {32,1}, {33,1}, {-1,2}, {-1,2},
     };
+    node->count_remaining_pegs();
     return node;
 }
 
-//TODO: think about moving it to Node class
 void fill_children(Node* front)
 {
     for (int i = 0; i < front->state.size(); i++)
@@ -304,6 +328,7 @@ void fill_children(Node* front)
                     Node* child = new Node(front);
                     child->state = new_state;
                     child->moved_peg_index = i -14;
+                    child->count_remaining_pegs();
                     front->children.push_back(child);
                 }
             }
@@ -319,6 +344,7 @@ void fill_children(Node* front)
                     Node* child = new Node(front);
                     child->state = new_state;
                     child->moved_peg_index = i - 2;
+                    child->count_remaining_pegs();
                     front->children.push_back(child);
                 }
             }
@@ -334,6 +360,7 @@ void fill_children(Node* front)
                     Node* child = new Node(front);
                     child->state = new_state;
                     child->moved_peg_index = i + 2;
+                    child->count_remaining_pegs();
                     front->children.push_back(child);
                 }
             }
@@ -349,6 +376,7 @@ void fill_children(Node* front)
                     Node* child = new Node(front);
                     child->state = new_state;
                     child->moved_peg_index = i + 14;
+                    child->count_remaining_pegs();
                     front->children.push_back(child);
                 }
             }
@@ -356,7 +384,7 @@ void fill_children(Node* front)
     }
 };
 
-bool check_optimal_solution(Node* node, int min_remaining_pegs)
+bool check_optimal_solution(Node* node)
 {
     if (node->remaining_pegs < min_remaining_pegs)
     {
@@ -370,4 +398,24 @@ bool check_optimal_solution(Node* node, int min_remaining_pegs)
 bool compare(Node* a, Node* b)
 {
     return(a->heuristic_point < b->heuristic_point);
+}
+
+void print_solution_steps()
+{
+    stack<Node*> steps;
+    Node* temp = sub_optimal_solution;
+    steps.push(temp);
+    while (temp->parent != NULL)
+    {
+        steps.push(temp->parent);
+        temp = temp->parent;
+    }
+
+    while (true)
+    {
+        if (steps.empty())
+            break;
+        cout << steps.top()->to_string() << endl;
+        steps.pop();
+    }
 }

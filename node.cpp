@@ -9,9 +9,8 @@ Node::Node(Node *parent)
 	}
 	else
 		depth = 0;
-	remaining_pegs = count_remaining_pegs();
 }
-int Node::count_remaining_pegs()
+void Node::count_remaining_pegs()
 {
 	int count = 0;
 	for (int i = 0; i < state.size(); i++)
@@ -21,13 +20,13 @@ int Node::count_remaining_pegs()
 			count++;
 		}
 	}
-
-	return count;
+	remaining_pegs = count;
 }
 
 std::string Node::to_string()
 {
 	std::string temp_state;
+	temp_state += "Current Depth: " + std::to_string(depth) + "\n";
 	for (int i = 0; i < 7; i++)
 	{
 		for (int j = 0; j < 7; j++)
@@ -36,7 +35,6 @@ std::string Node::to_string()
 		}
 		temp_state += '\n';
 	}
-	temp_state += "\nCurrent Depth: " + std::to_string(depth);
 	return temp_state;
 }
 
