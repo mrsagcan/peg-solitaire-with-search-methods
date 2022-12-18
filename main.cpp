@@ -2,10 +2,6 @@
 
 using namespace std;
 
-//TODO: garbage collection
-
-
-
 int main()
 {
     cout << "Please choose a search method:\n\n";
@@ -76,7 +72,7 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
     switch (method_choice)
     {
-        //bfs
+        //Breadth-First Search
         case 'a':
         {
             while (true)
@@ -84,9 +80,7 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 Node* front = frontier.front();
                 frontier.erase(frontier.begin());
 
-
                 explored_node_count++;
-
 
                 auto stop_time = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
@@ -109,7 +103,7 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
             }
             break;
         }
-        //dfs
+        //Depth-First Search
         case 'b':
         {
             while (true)
@@ -119,7 +113,6 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 frontier.erase(frontier.begin());
 
                 explored_node_count++;
-
 
                 auto stop_time = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
@@ -144,7 +137,7 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
             }
             break;
         }
-        //ids
+        //Iterative Deepening Search
         case 'c':
         {
             int depth_limit = 0;
@@ -158,6 +151,14 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                     frontier.erase(frontier.begin());
 
                     explored_node_count++;
+
+                    auto stop_time = chrono::high_resolution_clock::now();
+                    auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
+                    if (duration.count() >= time_limit)
+                    {
+                        cout << "Time limit reached!" << endl;
+                        break;
+                    }
 
                     if (depth_limit > top->depth)
                     {
@@ -187,18 +188,10 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 {
                     break;
                 }
-                auto stop_time = chrono::high_resolution_clock::now();
-                auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
-                if (duration.count() >= time_limit)
-                {
-                    cout << "Time limit reached!" << endl;
-
-                    break;
-                }
             }
             break;
         }
-        //dfs w/random
+        //Depth-First Search w/Random Selection
         case 'd':
         {
             while (true)
@@ -237,7 +230,7 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
             }
             break;
         }
-        //dfs with node selection heuristic
+        //Depth-First Search w/Node Selection Heuristic
         case 'e':
         {
             while (true)
@@ -280,7 +273,7 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
     }
 }
 
-//TODO: Remove first numbers
+
 
 Node* initialize_game()
 {
@@ -383,7 +376,6 @@ bool check_optimal_solution(Node* node)
 {
     if (node->remaining_pegs < min_remaining_pegs)
     {
-        delete sub_optimal_solution;
         min_remaining_pegs = node->remaining_pegs;
         sub_optimal_solution = node;
     }
@@ -391,11 +383,11 @@ bool check_optimal_solution(Node* node)
     {
         delete node;
     }
-
     if (node->remaining_pegs == 1) return true;
     return false;
 }
 
+//heuristic comparison
 bool compare(Node* a, Node* b)
 {
     return(a->heuristic_point < b->heuristic_point);
