@@ -157,6 +157,7 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                     if (duration.count() >= time_limit)
                     {
                         cout << "Time limit reached!" << endl;
+                        cutoff = true;
                         break;
                     }
 
@@ -181,6 +182,9 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                         break;
                     
                 }
+
+                
+
                 depth_limit++;
                 frontier.push_back(initial);
 
