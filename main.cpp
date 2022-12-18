@@ -87,8 +87,6 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
                 explored_node_count++;
 
-                if(check_optimal_solution(front)) 
-                    break;
 
                 auto stop_time = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
@@ -100,12 +98,14 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
                 fill_children(front);
 
+                if(check_optimal_solution(front)) 
+                    break;
+
                 for (Node* child : front->children)
                 {
                     frontier.push_back(child);
                 }
                 max_frontier_size = frontier.size() > max_frontier_size ? frontier.size() : max_frontier_size;
-                
             }
             break;
         }
@@ -120,8 +120,6 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
                 explored_node_count++;
 
-                if(check_optimal_solution(top))
-                    break;
 
                 auto stop_time = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
@@ -133,6 +131,9 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 }
 
                 fill_children(top);
+
+                if(check_optimal_solution(top))
+                    break;
 
                 for (int i = top->children.size() - 1; i >= 0 ; i--)
                 {
@@ -158,15 +159,15 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
                     explored_node_count++;
 
-                    if (check_optimal_solution(top))
-                    {
-                        cutoff = true;
-                        break;
-                    }
                     if (depth_limit > top->depth)
                     {
                         fill_children(top);
 
+                        if (check_optimal_solution(top))
+                        {
+                            cutoff = true;
+                            break;
+                        }
                         for (int i = top->children.size() - 1; i >= 0; i--)
                         {
                             frontier.emplace(frontier.begin(), top->children.at(i));
@@ -207,8 +208,6 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
                 explored_node_count++;
 
-                if (check_optimal_solution(top))
-                    break;
 
                 auto stop_time = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
@@ -220,6 +219,9 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 }
 
                 fill_children(top);
+
+                if (check_optimal_solution(top))
+                    break;
 
                 vector<Node*> shuffled_children = top->children;
 
@@ -245,8 +247,6 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
 
                 explored_node_count++;
 
-                if (check_optimal_solution(top))
-                    break;
 
                 auto stop_time = chrono::high_resolution_clock::now();
                 auto duration = chrono::duration_cast<chrono::minutes>(stop_time - start_time);
@@ -257,6 +257,9 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 }
 
                 fill_children(top);
+
+                if (check_optimal_solution(top))
+                    break;
 
                 for (int i = 0; i < top->children.size(); i++)
                 {
@@ -380,9 +383,15 @@ bool check_optimal_solution(Node* node)
 {
     if (node->remaining_pegs < min_remaining_pegs)
     {
+        delete sub_optimal_solution;
         min_remaining_pegs = node->remaining_pegs;
         sub_optimal_solution = node;
     }
+    else if (node->children.size() == 0)
+    {
+        delete node;
+    }
+
     if (node->remaining_pegs == 1) return true;
     return false;
 }
