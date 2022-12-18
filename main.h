@@ -18,4 +18,4 @@ Node* sub_optimal_solution;
 int explored_node_count = 0;
 int time_limit = 60;
 int min_remaining_pegs = 32;
-int max_frontier_size = -1;
+int max_frontier_size = 0;

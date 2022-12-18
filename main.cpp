@@ -5,6 +5,7 @@ using namespace std;
 //TODO: garbage collection
 
 
+
 int main()
 {
     cout << "Please choose a search method:\n\n";
@@ -52,7 +53,7 @@ int main()
     }
     else
     {
-        cout << "Sub-optimum Solution Found with " << min_remaining_pegs << "remaining pegs." << endl;
+        cout << "Sub-optimum Solution Found with " << min_remaining_pegs << " remaining pegs." << endl;
     }
     
     print_solution_steps();
@@ -103,10 +104,8 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 {
                     frontier.push_back(child);
                 }
-                if (frontier.size() > max_frontier_size)
-                {
-                    max_frontier_size = frontier.size();
-                }
+                max_frontier_size = frontier.size() > max_frontier_size ? frontier.size() : max_frontier_size;
+                
             }
             break;
         }
@@ -139,10 +138,8 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 {
                     frontier.emplace(frontier.begin(), top->children.at(i));
                 }
-                if (frontier.size() > max_frontier_size)
-                {
-                    max_frontier_size = frontier.size();
-                }
+
+                max_frontier_size = frontier.size() > max_frontier_size ? frontier.size() : max_frontier_size;
             }
             break;
         }
@@ -175,10 +172,9 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                             frontier.emplace(frontier.begin(), top->children.at(i));
                         }
                     }
-                    if (frontier.size() > max_frontier_size)
-                    {
-                        max_frontier_size = frontier.size();
-                    }
+
+                    max_frontier_size = frontier.size() > max_frontier_size ? frontier.size() : max_frontier_size;
+
                     if (frontier.empty())
                         break;
                     
@@ -234,10 +230,8 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 {
                     frontier.emplace(frontier.begin(), child);
                 }
-                if (frontier.size() > max_frontier_size)
-                {
-                    max_frontier_size = frontier.size();
-                }
+
+                max_frontier_size = frontier.size() > max_frontier_size ? frontier.size() : max_frontier_size;
             }
             break;
         }
@@ -275,14 +269,12 @@ void tree_search(char method_choice, Node* initial, chrono::steady_clock::time_p
                 {
                     frontier.emplace(frontier.begin(), sorted_children.at(i));
                 }
-                if (frontier.size() > max_frontier_size)
-                {
-                    max_frontier_size = frontier.size();
-                }
+
+                max_frontier_size = frontier.size() > max_frontier_size ? frontier.size() : max_frontier_size;
             }
             break;
         }
-    } 
+    }
 }
 
 //TODO: Remove first numbers
